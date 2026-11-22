@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>EPF Calculator - Employee Provident Fund projection (India)</title>
+  <meta name="description" content="Project your Employee Provident Fund balance year by year, with year-wise interest rates, voluntary PF and optional salary hikes. Runs entirely in your browser.">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap">
+      <h1>EPF Calculator</h1>
+      <p class="tagline">Project your Employee Provident Fund balance, year by year.</p>
+    </div>
+  </header>
+
+  <main class="wrap layout">
+    <section class="panel" aria-labelledby="inputs-h">
+      <h2 id="inputs-h">Your details</h2>
+      <form id="form" novalidate autocomplete="off">
+        <div class="grid">
+          <label>Current EPF balance (₹)
+            <input id="balance" type="number" min="0" step="any" inputmode="decimal" value="500000">
+          </label>
+          <label>Interest rate (% p.a.)
+            <input id="rate" type="number" min="0" step="any" inputmode="decimal" value="8.25">
+          </label>
+          <label>Monthly employee contribution (₹)
+            <input id="employee" type="number" min="0" step="any" inputmode="decimal" value="6000">
+          </label>
+          <label>Monthly employer contribution to EPF (₹)
+            <input id="employer" type="number" min="0" step="any" inputmode="decimal" value="3500">
+          </label>
+          <label>Monthly voluntary PF (₹)
+            <input id="vpf" type="number" min="0" step="any" inputmode="decimal" value="0">
+          </label>
+          <label>Years you will contribute
+            <input id="years" type="number" min="1" max="60" step="1" inputmode="numeric" value="10">
+          </label>
+          <label>Current month
+            <select id="startMonth"></select>
+          </label>
+          <label>Year
+            <input id="startYear" type="number" min="1990" max="2200" step="1" inputmode="numeric">
+          </label>
+        </div>
+
+        <details id="rates-box">
+          <summary>Optional: different interest rates by year</summary>
+          <p class="hint">The rate above applies at the start. Each row below sets a new rate from that financial year onwards, until a later row changes it.</p>
+          <div id="rate-rows"></div>
+          <button type="button" id="add-rate" class="btn secondary">Add rate change</button>
+        </details>
+
+        <details id="hike-box">
+          <summary>Optional: yearly salary hike</summary>
+          <p class="hint">Employee and employer contributions grow by this percentage each year. No hike applies in the start month.</p>
+          <div class="grid">
+            <label>Hike (% per year)
+              <input id="hike" type="number" min="0" step="any" inputmode="decimal" value="0">
+            </label>
+            <label>Hike takes effect in
+              <select id="hikeMonth"></select>
+            </label>
+          </div>
+          <label class="check"><input id="hikeVpf" type="checkbox"> Also apply the hike to voluntary PF</label>
+        </details>
+      </form>
+    </section>
+
+    <section class="panel results" aria-labelledby="results-h" aria-live="polite">
+      <h2 id="results-h">Projection</h2>
+      <div id="errors" class="errors" role="alert" hidden></div>
+      <div id="output">
+        <div id="summary" class="cards"></div>
+        <figure>
+          <div id="chart"></div>
+          <figcaption class="legend">
+            <span><i class="sw principal"></i> Principal (balance + contributions)</span>
+            <span><i class="sw interest"></i> Interest earned</span>
+          </figcaption>
+        </figure>
+        <div class="table-actions">
+          <h3>Year-wise balance</h3>
+          <button type="button" id="download" class="btn">Download CSV</button>
+        </div>
+        <div class="table-scroll">
+          <table id="table">
+            <thead>
+              <tr>
+                <th>Financial year</th><th>Period</th><th class="num">Rate %</th>
+                <th class="num">Opening</th><th class="num">Contributed</th>
+                <th class="num">Principal (end)</th><th class="num">Interest (year)</th>
+                <th class="num">Total balance (end)</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel notes" aria-labelledby="notes-h">
+      <h2 id="notes-h">How it works</h2>
+      <ul>
+        <li>Interest accrues every month on that month's opening balance (before the month's own contribution), at rate ÷ 12.</li>
+        <li>Accrued interest is credited once, on 31 March, and earns interest from the following month. It is not compounded within the year.</li>
+        <li>Rows are financial years (April to March). The first and last rows are part years if you start or finish mid-year.</li>
+        <li>Enter only the employer's share that goes into EPF. The EPS pension share (8.33% of wages, capped at ₹15,000 wages) does not reach the EPF balance.</li>
+        <li>This is an estimate. Rates are set by EPFO each year and your actual passbook can differ by a few rupees.</li>
+      </ul>
+      <p class="privacy">Everything is calculated in your browser. Nothing is sent anywhere.</p>
+    </section>
+  </main>
+
+  <footer class="wrap site-footer">
+    <a href="https://github.com/ramyaDhanush/epf-calculator">Source on GitHub</a>
+  </footer>
+
+  <script src="epf.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
