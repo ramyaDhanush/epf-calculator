@@ -11,6 +11,8 @@
   --err-bg: #fdecec;
   --err-text: #8a1f1f;
   --head-bg: #eef1f6;
+  --tint-year: #dcebfa;
+  --tint-cum: #d9f1e3;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -27,6 +29,8 @@
     --err-bg: #3a1c1c;
     --err-text: #ffb4b4;
     --head-bg: #232b36;
+    --tint-year: #1e3550;
+    --tint-cum: #1b3d2e;
   }
 }
 
@@ -121,11 +125,23 @@ line.gl { stroke: var(--border); stroke-width: 1; }
 .table-actions { display: flex; justify-content: space-between; align-items: center; margin-top: 16px; }
 .table-actions h3 { margin: 0; font-size: 1rem; }
 .table-scroll { overflow-x: auto; margin-top: 8px; }
-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; font-variant-numeric: tabular-nums; }
-th, td { padding: 6px 10px; border-bottom: 1px solid var(--border); text-align: left; white-space: nowrap; }
-th { background: var(--head-bg); font-weight: 600; }
+table { width: 100%; border-collapse: collapse; font-size: 0.8rem; font-variant-numeric: tabular-nums; }
+th, td { padding: 6px 8px; border-bottom: 1px solid var(--border); text-align: left; white-space: nowrap; }
+th { background: var(--head-bg); font-weight: 600; white-space: normal; vertical-align: bottom; min-width: 78px; }
 .num { text-align: right; }
-td.total { font-weight: 700; }
+th.g-year, td.g-year { background: var(--tint-year); }
+th.g-cum, td.g-cum { background: var(--tint-cum); }
+/* Total balance stays visible when the table scrolls sideways */
+th.total, td.total { position: sticky; right: 0; border-left: 2px solid var(--accent); font-weight: 700; background: var(--panel); }
+th.total { background: var(--head-bg); }
+
+.eq { margin-top: 8px; font-size: 0.8rem; color: var(--muted); }
+.eq p { margin: 4px 0; }
+.chip { display: inline-block; padding: 1px 8px; border-radius: 4px; color: var(--text); }
+.chip.g-year { background: var(--tint-year); }
+.chip.g-cum { background: var(--tint-cum); }
+.check.ok { color: var(--c-interest); }
+.check.bad { color: var(--err-text); background: var(--err-bg); padding: 4px 8px; border-radius: 4px; }
 
 .notes ul { margin: 0; padding-left: 18px; color: var(--muted); font-size: 0.85rem; }
 .notes li { margin-bottom: 6px; }

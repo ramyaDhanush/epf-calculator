@@ -53,6 +53,27 @@ class ProjectionTests(unittest.TestCase):
         self.assertEqual(epf.rate_for(2031, D(8), ch), D(7))
 
 
+class IdentityTests(unittest.TestCase):
+    """Every row must satisfy both sums exactly, across many scenarios."""
+
+    def test_identities_hold_for_many_scenarios(self):
+        for month in range(1, 13):
+            for years in (1, 2, 7, 30):
+                for hike in (D(0), D("7.5")):
+                    rows = epf.project(D("123456.78"), D("4321.5"), D("1250.25"), D("999.99"),
+                                       D("8.25"), {2028: D("7.85"), 2031: D("8.6")},
+                                       month, 2026, years, hike=hike, hike_vpf=bool(hike))
+                    self.assertEqual(epf.verify(rows, D("123456.78")), [], (month, years, hike))
+                    for r in rows:
+                        self.assertEqual(r.opening + r.contributed + r.interest, r.closing)
+                        self.assertEqual(r.principal + r.cum_interest, r.closing)
+
+    def test_verify_detects_a_broken_row(self):
+        rows = epf.project(**BASE)
+        rows[1].closing += D("0.01")
+        self.assertTrue(epf.verify(rows, BASE["balance"]))
+
+
 class HelperTests(unittest.TestCase):
     def test_indian_grouping(self):
         self.assertEqual(epf.inr(D("1101567.33")), "11,01,567.33")

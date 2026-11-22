@@ -67,3 +67,22 @@ test("CSV and INR formatting", () => {
   assert.ok(csv[4].endsWith(",1101567.33"));
   assert.equal(EPF.formatINR(1101567.33), "11,01,567.33");
 });
+
+test("both sums equal the total balance in every row, across scenarios", () => {
+  for (let month = 1; month <= 12; month++) {
+    for (const years of [1, 2, 7, 30]) {
+      for (const hike of [0, 7.5]) {
+        const o = { balance: 123456.78, employee: 4321.5, employer: 1250.25, vpf: 999.99, rate: 8.25,
+          rateChanges: { 2028: 7.85, 2031: 8.6 }, startMonth: month, startYear: 2026, years, hike, hikeVpf: hike > 0 };
+        const rows = EPF.project(o);
+        assert.deepEqual(EPF.verify(rows, o.balance), [], JSON.stringify([month, years, hike]));
+      }
+    }
+  }
+});
+
+test("verify detects a broken row", () => {
+  const rows = EPF.project(BASE);
+  rows[1].closing += 0.01;
+  assert.ok(EPF.verify(rows, BASE.balance).length > 0);
+});

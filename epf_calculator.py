@@ -206,12 +206,31 @@ def project(balance, employee, employer, vpf, base_rate, rate_changes,
     return rows
 
 
+def verify(rows, balance):
+    """Return a list of problems; empty means every identity holds exactly."""
+    problems = []
+    interest_sum = ZERO
+    prev = balance
+    for r in rows:
+        if r.opening + r.contributed + r.interest != r.closing:
+            problems.append(f"{r.fy}: opening + contributed + interest != total balance")
+        if r.principal + r.cum_interest != r.closing:
+            problems.append(f"{r.fy}: principal + total interest != total balance")
+        if r.opening != prev:
+            problems.append(f"{r.fy}: opening != previous closing")
+        interest_sum += r.interest
+        if interest_sum != r.cum_interest:
+            problems.append(f"{r.fy}: total interest != sum of yearly interest")
+        prev = r.closing
+    return problems
+
+
 def print_table(rows):
     headers = ["Financial year", "Period", "Rate %", "Opening", "Contributed",
-               "Principal (end)", "Interest earned (year)", "Total interest (to date)",
+               "Interest earned (year)", "Principal (end)", "Total interest (to date)",
                "Total balance (end)"]
     data = [[r.fy, r.period, f"{r.rate:.2f}", inr(r.opening), inr(r.contributed),
-             inr(r.principal), inr(r.interest), inr(r.cum_interest), inr(r.closing)]
+             inr(r.interest), inr(r.principal), inr(r.cum_interest), inr(r.closing)]
             for r in rows]
     widths = [max(len(h), *(len(d[i]) for d in data)) for i, h in enumerate(headers)]
 
@@ -223,6 +242,8 @@ def print_table(rows):
     print("  ".join("-" * w for w in widths))
     for d in data:
         print(line(d))
+    print("\nOpening + Contributed + Interest earned (year) = Total balance")
+    print("Principal + Total interest (to date)          = Total balance")
 
 
 def print_summary(rows, balance, years):
@@ -330,6 +351,9 @@ def main():
               f"on employee + employer{' + VPF' if a.hike_vpf else ''} contributions")
     print()
     print_table(rows)
+    problems = verify(rows, balance)
+    print("Check passed: both sums equal the total balance on every row." if not problems
+          else "CHECK FAILED: " + "; ".join(problems))
     print_summary(rows, balance, years)
 
     if csv_path:

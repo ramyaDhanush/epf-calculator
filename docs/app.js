@@ -160,17 +160,29 @@
     body.replaceChildren();
     rows.forEach((r) => {
       const tr = document.createElement("tr");
-      const cells = [r.fy, r.period, r.rate.toFixed(2), fmt(r.opening), fmt(r.contributed),
-        fmt(r.principal), fmt(r.interest), fmt(r.cumInterest), fmt(r.closing)];
-      cells.forEach((text, i) => {
+      const cells = [
+        [r.fy, ""], [r.period, ""], [r.rate.toFixed(2), "num"],
+        [fmt(r.opening), "num g-year"], [fmt(r.contributed), "num g-year"], [fmt(r.interest), "num g-year"],
+        [fmt(r.principal), "num g-cum"], [fmt(r.cumInterest), "num g-cum"],
+        [fmt(r.closing), "num total"],
+      ];
+      cells.forEach(([text, cls]) => {
         const td = document.createElement("td");
         td.textContent = text;
-        if (i >= 2) td.className = "num";
-        if (i === 8) td.className = "num total";
+        td.className = cls;
         tr.appendChild(td);
       });
       body.appendChild(tr);
     });
+  }
+
+  function renderCheck(rows, balance) {
+    const problems = EPF.verify(rows, balance);
+    const el = $("check");
+    el.className = "check" + (problems.length ? " bad" : " ok");
+    el.textContent = problems.length
+      ? "Check failed: " + problems.join("; ")
+      : "Check passed: both sums equal the total balance on every row, and each year opens with the previous year's closing balance.";
   }
 
   function update() {
@@ -193,6 +205,7 @@
     renderSummary(EPF.summarize(lastRows, opts.balance));
     renderChart(lastRows);
     renderTable(lastRows);
+    renderCheck(lastRows, opts.balance);
   }
 
   function downloadCSV() {

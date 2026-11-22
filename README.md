@@ -25,7 +25,8 @@ Output, for every financial year (April to March) from now on:
 
 - Opening balance and contributions in the year
 - Principal at year end (opening balance plus all contributions, no interest)
-- Interest earned in the year, total interest to date, and total balance at year end (principal + total interest to date)
+- Interest earned in the year, total interest to date, and total balance at year end
+- Two sums that both equal the total balance, colour-coded in the website table: Opening + Contributed + Interest earned (year), and Principal + Total interest (to date). The site and the CLI check them on every row.
 
 At the end, a summary: total contributions (employee, employer, VPF), total interest, and the final balance.
 

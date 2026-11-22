@@ -128,6 +128,28 @@
     return rows;
   }
 
+  // Returns a list of problems; an empty list means every identity holds.
+  function verify(rows, balance) {
+    const problems = [];
+    const near = (a, b) => Math.abs(a - b) < 0.005;
+    let interestSum = 0;
+    rows.forEach((r, i) => {
+      if (!near(r.opening + r.contributed + r.interest, r.closing))
+        problems.push(r.fy + ": opening + contributed + interest does not equal total balance");
+      if (!near(r.principal + r.cumInterest, r.closing))
+        problems.push(r.fy + ": principal + total interest does not equal total balance");
+      if (!near(r.employee + r.employer + r.vpf, r.contributed))
+        problems.push(r.fy + ": contribution parts do not add up");
+      const prev = i === 0 ? balance : rows[i - 1].closing;
+      if (!near(r.opening, prev))
+        problems.push(r.fy + ": opening balance differs from the previous closing balance");
+      interestSum += r.interest;
+      if (!near(interestSum, r.cumInterest))
+        problems.push(r.fy + ": total interest to date does not match the yearly interest");
+    });
+    return problems;
+  }
+
   function summarize(rows, balance) {
     const sum = (k) => money(rows.reduce((a, r) => a + r[k], 0));
     const last = rows[rows.length - 1];
@@ -161,5 +183,5 @@
     return inrFmt.format(n);
   }
 
-  return { MONTH_NAMES, MONTH_ABBR, money, fyLabel, parseRateChanges, validate, project, summarize, toCSV, formatINR };
+  return { MONTH_NAMES, MONTH_ABBR, money, fyLabel, parseRateChanges, validate, project, verify, summarize, toCSV, formatINR };
 });
