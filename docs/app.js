@@ -161,12 +161,12 @@
     rows.forEach((r) => {
       const tr = document.createElement("tr");
       const cells = [r.fy, r.period, r.rate.toFixed(2), fmt(r.opening), fmt(r.contributed),
-        fmt(r.principal), fmt(r.interest), fmt(r.closing)];
+        fmt(r.principal), fmt(r.interest), fmt(r.cumInterest), fmt(r.closing)];
       cells.forEach((text, i) => {
         const td = document.createElement("td");
         td.textContent = text;
         if (i >= 2) td.className = "num";
-        if (i === 7) td.className = "num total";
+        if (i === 8) td.className = "num total";
         tr.appendChild(td);
       });
       body.appendChild(tr);

@@ -25,7 +25,7 @@ Output, for every financial year (April to March) from now on:
 
 - Opening balance and contributions in the year
 - Principal at year end (opening balance plus all contributions, no interest)
-- Interest earned in the year, and total balance at year end
+- Interest earned in the year, total interest to date, and total balance at year end (principal + total interest to date)
 
 At the end, a summary: total contributions (employee, employer, VPF), total interest, and the final balance.
 

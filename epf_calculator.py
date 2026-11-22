@@ -208,9 +208,11 @@ def project(balance, employee, employer, vpf, base_rate, rate_changes,
 
 def print_table(rows):
     headers = ["Financial year", "Period", "Rate %", "Opening", "Contributed",
-               "Principal (end)", "Interest (year)", "Total balance (end)"]
+               "Principal (end)", "Interest earned (year)", "Total interest (to date)",
+               "Total balance (end)"]
     data = [[r.fy, r.period, f"{r.rate:.2f}", inr(r.opening), inr(r.contributed),
-             inr(r.principal), inr(r.interest), inr(r.closing)] for r in rows]
+             inr(r.principal), inr(r.interest), inr(r.cum_interest), inr(r.closing)]
+            for r in rows]
     widths = [max(len(h), *(len(d[i]) for d in data)) for i, h in enumerate(headers)]
 
     def line(cells):
