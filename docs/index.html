@@ -75,10 +75,15 @@
       <div id="output">
         <div id="summary" class="cards"></div>
         <figure>
-          <div id="chart"></div>
+          <div id="chart">
+            <div id="chart-plot"></div>
+            <div id="tip" class="tip" role="tooltip" hidden></div>
+          </div>
           <figcaption class="legend">
-            <span><i class="sw principal"></i> Principal (balance + contributions)</span>
-            <span><i class="sw interest"></i> Interest earned</span>
+            <span><i class="sw principal"></i> Principal (opening balance + contributions)</span>
+            <span><i class="sw interest"></i> Total interest earned to date</span>
+            <span class="muted">One bar per financial year. Hover or tab to a bar for amounts.</span>
+            <span id="chart-note" class="muted" hidden>* part year (you start or stop mid-year)</span>
           </figcaption>
         </figure>
         <div class="table-actions">

@@ -112,10 +112,29 @@ summary { cursor: pointer; font-weight: 600; }
 .card-note { font-size: 0.75rem; color: var(--muted); margin-top: 2px; }
 
 figure { margin: 16px 0 0; }
+#chart { position: relative; }
 #chart svg { width: 100%; height: auto; display: block; }
 line.gl { stroke: var(--border); stroke-width: 1; }
 .axis { fill: var(--muted); font-size: 11px; }
 .bar-principal { fill: var(--c-principal); }
+.hit { fill: transparent; }
+.col { outline: none; cursor: crosshair; }
+.col:hover .hit, .col:focus-visible .hit { fill: var(--head-bg); }
+.col:focus-visible .hit { stroke: var(--accent); stroke-width: 1.5; }
+.col:hover .seg { opacity: 0.55; }
+.col .seg:hover { opacity: 1; stroke: var(--text); stroke-width: 1.5; }
+.xl { font-variant-numeric: tabular-nums; }
+.muted { color: var(--muted); }
+.tip { position: absolute; z-index: 5; pointer-events: none; width: 250px; padding: 8px 10px;
+  background: var(--panel); color: var(--text); border: 1px solid var(--border); border-radius: 8px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25); font-size: 0.8rem; }
+.tip-title { font-weight: 700; }
+.tip-sub { color: var(--muted); font-size: 0.72rem; }
+.tip-row { margin-top: 8px; padding: 4px 6px; border-radius: 6px; }
+.tip-row.hl { background: var(--head-bg); outline: 1px solid var(--accent); }
+.tip-line { display: flex; justify-content: space-between; gap: 8px; font-variant-numeric: tabular-nums; }
+.tip-label { display: inline-flex; align-items: center; }
+.tip-val { font-weight: 700; }
 .bar-interest { fill: var(--c-interest); }
 .legend { display: flex; flex-wrap: wrap; gap: 16px; font-size: 0.8rem; color: var(--muted); margin-top: 4px; }
 .sw { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 4px; }

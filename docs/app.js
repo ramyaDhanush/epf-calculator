@@ -122,37 +122,123 @@
     return String(Math.round(n));
   }
 
+  // ---------- bar chart: one stacked bar per financial year ----------
+  const SVG_W = 720, SVG_H = 300, PAD_L = 62, PAD_R = 10, PAD_T = 12;
+
+  function isPartYear(r) {
+    const parts = r.period.split(" - ");
+    return !(parts[0].startsWith("Apr") && parts[1].startsWith("Mar"));
+  }
+
   function renderChart(rows) {
-    const W = 640, H = 260, padL = 58, padR = 8, padT = 10, padB = 28;
-    const plotH = H - padT - padB;
+    hideTip();
+    const n = rows.length;
+    const slot = (SVG_W - PAD_L - PAD_R) / n;
+    const mode = slot >= 78 ? "full" : slot >= 52 ? "short" : slot >= 18 ? "angled" : "vertical";
+    const padB = mode === "full" || mode === "short" ? 34 : 62;
+    const plotH = SVG_H - PAD_T - padB;
     const max = Math.max.apply(null, rows.map((r) => r.closing)) || 1;
-    const bw = (W - padL - padR) / rows.length;
-    const barW = Math.min(bw * 0.7, 48);
-    const step = Math.ceil(rows.length / 12);
-    let s = '<svg viewBox="0 0 ' + W + " " + H + '" role="img" ' +
-      'aria-label="Stacked bars of principal and interest at the end of each financial year">';
+    const barW = Math.min(slot * 0.68, 56);
+    const fontPx = slot < 14 ? 8 : slot < 22 ? 9 : 11;
+
+    let s = '<svg viewBox="0 0 ' + SVG_W + " " + SVG_H + '" role="group" ' +
+      'aria-label="Stacked bars of principal and interest at the end of each financial year. Hover or focus a bar for details.">';
     for (let t = 0; t <= 4; t++) {
-      const y = padT + plotH * (1 - t / 4);
-      s += '<line class="gl" x1="' + padL + '" x2="' + (W - padR) + '" y1="' + y + '" y2="' + y + '"/>';
-      s += '<text class="axis" x="' + (padL - 6) + '" y="' + (y + 4) + '" text-anchor="end">' + compact((max * t) / 4) + "</text>";
+      const y = PAD_T + plotH * (1 - t / 4);
+      s += '<line class="gl" x1="' + PAD_L + '" x2="' + (SVG_W - PAD_R) + '" y1="' + y + '" y2="' + y + '"/>';
+      s += '<text class="axis" x="' + (PAD_L - 6) + '" y="' + (y + 4) + '" text-anchor="end">₹ ' + compact((max * t) / 4) + "</text>";
     }
     rows.forEach((r, i) => {
-      const x = padL + i * bw + (bw - barW) / 2;
+      const x = PAD_L + i * slot + (slot - barW) / 2;
+      const cx = x + barW / 2;
       const pH = (r.principal / max) * plotH;
       const iH = (r.cumInterest / max) * plotH;
-      const yP = padT + plotH - pH;
+      const yP = PAD_T + plotH - pH;
       const yI = yP - iH;
-      const tip = r.fy + ": ₹ " + fmt(r.closing);
-      s += '<g><title>' + tip + "</title>" +
-        '<rect class="bar-principal" x="' + x + '" y="' + yP + '" width="' + barW + '" height="' + pH + '"/>' +
-        '<rect class="bar-interest" x="' + x + '" y="' + yI + '" width="' + barW + '" height="' + iH + '"/></g>';
-      if (i % step === 0) {
-        const label = r.fy.slice(5, 7) + "-" + r.fy.slice(-2);
-        s += '<text class="axis" x="' + (x + barW / 2) + '" y="' + (H - 8) + '" text-anchor="middle">' + label + "</text>";
+      const part = isPartYear(r);
+      s += '<g class="col" data-i="' + i + '" tabindex="0" role="img" aria-label="' + r.fy + ": total balance ₹ " + fmt(r.closing) + '">' +
+        '<rect class="hit" x="' + (PAD_L + i * slot) + '" y="' + PAD_T + '" width="' + slot + '" height="' + plotH + '"/>' +
+        '<rect class="seg bar-principal" data-seg="principal" x="' + x + '" y="' + yP + '" width="' + barW + '" height="' + pH + '"/>' +
+        '<rect class="seg bar-interest" data-seg="interest" x="' + x + '" y="' + yI + '" width="' + barW + '" height="' + iH + '"/>' +
+        "</g>";
+      const label = (mode === "full" ? r.fy : r.fy.slice(3)) + (part ? "*" : "");
+      const ly = PAD_T + plotH + 14;
+      if (mode === "full" || mode === "short") {
+        s += '<text class="axis xl" x="' + cx + '" y="' + ly + '" text-anchor="middle" font-size="' + fontPx + '">' + label + "</text>";
+      } else {
+        const deg = mode === "angled" ? -45 : -90;
+        const tx = mode === "angled" ? cx + 4 : cx + fontPx / 3;
+        s += '<text class="axis xl" font-size="' + fontPx + '" text-anchor="end" x="' + tx + '" y="' + (ly - 4) +
+          '" transform="rotate(' + deg + " " + tx + " " + (ly - 4) + ')">' + label + "</text>";
       }
     });
     s += "</svg>";
-    $("chart").innerHTML = s; // built only from numbers and fixed labels
+    $("chart-plot").innerHTML = s; // built only from numbers and fixed labels
+    $("chart-note").hidden = !rows.some(isPartYear);
+  }
+
+  // ---------- chart tooltip ----------
+  function tipEl(tag, cls, text) {
+    const e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text != null) e.textContent = text;
+    return e;
+  }
+
+  function tipRow(swatch, label, value, sub, highlighted) {
+    const row = tipEl("div", "tip-row" + (highlighted ? " hl" : ""));
+    const head = tipEl("div", "tip-line");
+    const l = tipEl("span", "tip-label");
+    if (swatch) l.appendChild(tipEl("i", "sw " + swatch));
+    l.appendChild(document.createTextNode(label));
+    head.append(l, tipEl("span", "tip-val", "₹ " + value));
+    row.appendChild(head);
+    if (sub) row.appendChild(tipEl("div", "tip-sub", sub));
+    return row;
+  }
+
+  function showTip(i, seg, clientX, clientY) {
+    const r = lastRows[i];
+    if (!r) return hideTip();
+    const tip = $("tip");
+    const title = tipEl("div", "tip-title", r.fy + (isPartYear(r) ? " (part year)" : ""));
+    const period = tipEl("div", "tip-sub", r.period + " at " + r.rate.toFixed(2) + "% p.a.");
+    tip.replaceChildren(
+      title, period,
+      tipRow("principal", "Principal (end)", fmt(r.principal),
+        "Starting balance + all contributions so far. Contributed this year: ₹ " + fmt(r.contributed), seg === "principal"),
+      tipRow("interest", "Total interest (to date)", fmt(r.cumInterest),
+        "Earned this year: ₹ " + fmt(r.interest), seg === "interest"),
+      tipRow("", "Total balance (end)", fmt(r.closing), "", false)
+    );
+    tip.hidden = false;
+    const box = $("chart").getBoundingClientRect();
+    const w = tip.offsetWidth || 240, h = tip.offsetHeight || 150;
+    let x = clientX - box.left + 14;
+    let y = clientY - box.top + 14;
+    if (x + w > box.width) x = Math.max(0, clientX - box.left - w - 14);
+    if (y + h > box.height) y = Math.max(0, box.height - h);
+    tip.style.left = x + "px";
+    tip.style.top = y + "px";
+  }
+
+  function hideTip() {
+    const tip = $("tip");
+    if (tip) tip.hidden = true;
+  }
+
+  function onChartPointer(e) {
+    const col = e.target && e.target.closest ? e.target.closest("[data-i]") : null;
+    if (!col) return hideTip();
+    const seg = e.target.dataset ? e.target.dataset.seg || null : null;
+    showTip(Number(col.dataset.i), seg, e.clientX, e.clientY);
+  }
+
+  function onChartFocus(e) {
+    const col = e.target && e.target.closest ? e.target.closest("[data-i]") : null;
+    if (!col) return;
+    const b = col.getBoundingClientRect();
+    showTip(Number(col.dataset.i), null, b.left + b.width / 2, b.top + 20);
   }
 
   function renderTable(rows) {
@@ -241,6 +327,11 @@
     }
   });
   $("download").addEventListener("click", downloadCSV);
+  $("chart").addEventListener("pointermove", onChartPointer);
+  $("chart").addEventListener("pointerdown", onChartPointer);
+  $("chart").addEventListener("pointerleave", hideTip);
+  $("chart").addEventListener("focusin", onChartFocus);
+  $("chart").addEventListener("focusout", hideTip);
 
   update();
 })();
